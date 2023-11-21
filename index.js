@@ -40,6 +40,16 @@ app.post('/api/cancel_order', (req, res)=>{ //tested
     res.status(200).json('Nah not Ep order!');
 })
 
+app.post('/api/cancel_by_customer', (req, res)=>{ //tested
+
+    const obj ={
+        id: req.body.data.id,
+        data: { salesdrive_manager: '3' }
+    }
+    salesRequests.editOrder(obj);
+    res.status(200).json('Auto Manager select -  ok!');
+})
+
 app.post('/api/save_declaration_id', (req, res)=>{
 
     if(req.body.data.comment.includes('Ep'))
