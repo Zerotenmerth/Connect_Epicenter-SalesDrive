@@ -38,7 +38,7 @@ export default async function SendCustomHook(token)
                 arrEncryptedID.push(result.items[i].id);
             });
 
-            await sendRequest('POST', `${ourIp}:443/api/new_order_ep`, arrEncryptedID);
+            await sendRequest('POST', `${ourIp}:8080/api/new_order_ep`, arrEncryptedID);
         }
     }
 }

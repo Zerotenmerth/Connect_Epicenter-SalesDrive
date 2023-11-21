@@ -19,7 +19,7 @@ const salesRequests = new RequestsSales();
 import { ComparisonObjects, CreateClientDataObj, createObjWithoutUserData } from "./marketplaceMethods.js";
 
 
-const PORT = 443;
+const PORT = 8080;
 const app = express();
 
 app.use(express.json());
