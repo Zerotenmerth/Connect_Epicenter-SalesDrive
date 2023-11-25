@@ -115,13 +115,13 @@ app.post('/api/confirmed_order', (req, res)=>{
 
 app.post('/api/new_order_ep', (req, res)=>{ //tested
 
-    req.forEach(async(order) => {
+    req.body.forEach(async(order) => {
         const epObj = await epRequests.getDataFromOrder(order);
         const objForSales = createObjWithoutUserData(epObj);
         salesRequests.addOrder(objForSales);
         res.status(200).json('new orders created ok!');
     })    
-    
+
 })
 
 app.post('/api/miss_call', (req, res)=>{ //tested
