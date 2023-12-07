@@ -50,11 +50,6 @@ function createFullEpObjFromOrder(obj)
 export function createObjWithoutUserData(obj)
 {
     let commentary = `*auto* Ep ${obj.comment}`;
-    const statusOfPayment = obj.address.shipment.paymentStatus;
-
-    if(statusOfPayment=='hold_set')
-        commentary+='\n$Кабинет эпицентра!';
-
     const shipmentMethod = obj.address.shipment.provider;
     const direction= obj.office.title;
     let typeMail;
@@ -93,6 +88,12 @@ export function createObjWithoutUserData(obj)
 
 export function CreateClientDataObj(obj)
 {
+    let commentary = `*auto* Ep ${obj.comment}`;
+    const statusOfPayment = obj.address.shipment.paymentStatus;
+
+    if(statusOfPayment=='hold_set')
+        commentary+='\n$Кабинет эпицентра!';
+    console.log(`${statusOfPayment} || ${commentary}`);
     return {
         getResultData: '1',
         data:{
@@ -101,7 +102,7 @@ export function CreateClientDataObj(obj)
             mName: obj.address?.patronymic || '',
             phone: obj.address.phone,
             email: obj.address?.email || '',
-            salesdrive_manager: '3'
+            comment: commentary
         }
     };
 }
@@ -110,11 +111,11 @@ export function ComparisonObjects(salesObj, epObj)
 {
     const comprasion ={isSamePhone:true, isSameDelivery: true}
     if(salesObj.data.contacts[0].phone[0] !== epObj.address.phone)
-    comprasion.isSamePhone==false;
+    comprasion.isSamePhone=false;
 
-    salesObj.data.ord_delivery == 'novaposhta' ? 'nova_poshta' : salesObj.data.ord_delivery;
-    if(salesObj.data.ord_delivery !== epObj.address.shipment.provider)
-    isSameDelivery=false;
+    const typeMail = salesObj.data.ord_delivery == 'novaposhta' ? 'nova_poshta' : salesObj.data.ord_delivery;
+    if(typeMail !== epObj.address.shipment.provider)
+    comprasion.isSameDelivery=false;
 
     return comprasion;
 }

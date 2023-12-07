@@ -21,6 +21,7 @@ export default async function SendCustomHook(token)
     }
     
     let result = await sendRequest('GET', 'https://core-api.epicentrm.cloud/v2/oms/orders?filter%5BstatusCode%5D%5B%5D=new', null, headers);
+
     if(result.items && result.items.length>0)
     {
         const arrIDs=result.items.map(item => item.number);
@@ -37,6 +38,7 @@ export default async function SendCustomHook(token)
             arrIDs.forEach((_ , i) => {
                 arrEncryptedID.push(result.items[i].id);
             });
+
             await sendRequest('POST', `${ourIp}:8080/api/new_order_ep`, arrEncryptedID);
         }
     }
