@@ -95,58 +95,9 @@ export default class EpRequests{
     }
     async changeToCancel(orderID, rejectID)
     {
-        let reason_code; let comment="Не влаштовує"; let translationKey;
-        switch (rejectID) {
-            case 35:
-                reason_code= "customer_dissatisfied_with_the_shipping_cost";
-                translationKey= "order.customer_cancel_reason.customer_dissatisfied_with_the_shipping_cost";
-            break;
-            case 36:
-                reason_code= "customer_delivery_speed_too_slow";
-                translationKey= "order.customer_cancel_reason.customer_delivery_speed_too_slow";
-            break;
-            case 37:
-                reason_code= "customer_product_characteristics_are_not_suitable";
-                translationKey= "order.customer_cancel_reason.customer_product_characteristics_are_not_suitable";
-            break;
-            case 38:
-                reason_code= "customer_not_timely_confirmation_of_the_availability_of_goods";
-                comment= "Нема в наявностi";
-                translationKey= "order.customer_cancel_reason.customer_not_timely_confirmation_of_the_availability_of_goods";
-            break;
-            case 39:
-                reason_code= "customer_failed_to_contact";
-                comment= "Не вийшло зв`язатись";
-                translationKey= "order.customer_cancel_reason.customer_failed_to_contact";
-            break;
-            case 40:
-                reason_code= "customer_other_reason";
-                comment= "Клiєнт передумав!";
-                translationKey= "order.customer_cancel_reason.customer_other_reason";
-            break;
-            case 41:
-                reason_code= "customer_bought_elsewhere_as_a_gift";
-                comment= "Вже придбав";
-                translationKey= "order.customer_cancel_reason.customer_bought_elsewhere_as_a_gift";
-            break;
-            case 42:
-                reason_code= "customer_order_duplicate";
-                comment= "Дубль замовлення";
-                translationKey= "order.customer_cancel_reason.customer_order_duplicate";
-            break;
-            case 61:
-                reason_code= "customer_other_reason";
-                comment= "Передплату не було сплачено!";
-                translationKey= "order.customer_cancel_reason.customer_other_reason";
-            break;
-            case 62:
-                reason_code= "customer_prepayment_required";
-                translationKey= "order.customer_cancel_reason.customer_prepayment_required";
-            break;
-        }
-
+        const rejObj = GetRejectReason(rejectID);
         await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/change-status/to/canceled`,
-                    {reason_code, comment, translationKey}, CreateHeaders());
+        rejObj, CreateHeaders());
     }
     async changeToConfirmed(orderID)
     {
@@ -159,21 +110,79 @@ export default class EpRequests{
     }
     async changeCallStatus(orderID, callID)
     {
-        let callStatus;
-        switch (callID) {
-            case 10:
-                callStatus='first_fail';
-                break;
-            case 12:
-                callStatus='second_fail';
-                break;
-            default:
-                callStatus='success';
-                break;
-        }
-
+        const callObj = GetCallStatus(callID);
         await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/call-status`, 
-                    {callStatus}, CreateHeaders());
+        callObj, CreateHeaders());
     }
 
+}
+
+function GetRejectReason(rejectID)
+{
+    let reason_code; let comment="Не влаштовує"; let translationKey;
+    switch (rejectID) {
+        case 35:
+            reason_code= "customer_dissatisfied_with_the_shipping_cost";
+            translationKey= "order.customer_cancel_reason.customer_dissatisfied_with_the_shipping_cost";
+        break;
+        case 36:
+            reason_code= "customer_delivery_speed_too_slow";
+            translationKey= "order.customer_cancel_reason.customer_delivery_speed_too_slow";
+        break;
+        case 37:
+            reason_code= "customer_product_characteristics_are_not_suitable";
+            translationKey= "order.customer_cancel_reason.customer_product_characteristics_are_not_suitable";
+        break;
+        case 38:
+            reason_code= "customer_not_timely_confirmation_of_the_availability_of_goods";
+            comment= "Нема в наявностi";
+            translationKey= "order.customer_cancel_reason.customer_not_timely_confirmation_of_the_availability_of_goods";
+        break;
+        case 39:
+            reason_code= "customer_failed_to_contact";
+            comment= "Не вийшло зв`язатись";
+            translationKey= "order.customer_cancel_reason.customer_failed_to_contact";
+        break;
+        case 40:
+            reason_code= "customer_other_reason";
+            comment= "Клiєнт передумав!";
+            translationKey= "order.customer_cancel_reason.customer_other_reason";
+        break;
+        case 41:
+            reason_code= "customer_bought_elsewhere_as_a_gift";
+            comment= "Вже придбав";
+            translationKey= "order.customer_cancel_reason.customer_bought_elsewhere_as_a_gift";
+        break;
+        case 42:
+            reason_code= "customer_order_duplicate";
+            comment= "Дубль замовлення";
+            translationKey= "order.customer_cancel_reason.customer_order_duplicate";
+        break;
+        case 61:
+            reason_code= "customer_other_reason";
+            comment= "Передплату не було сплачено!";
+            translationKey= "order.customer_cancel_reason.customer_other_reason";
+        break;
+        case 62:
+            reason_code= "customer_prepayment_required";
+            translationKey= "order.customer_cancel_reason.customer_prepayment_required";
+        break;
+    }
+    return {reason_code, comment, translationKey};
+}
+function GetCallStatus(callID)
+{
+    let callStatus;
+    switch (callID) {
+        case 10:
+            callStatus='first_fail';
+            break;
+        case 12:
+            callStatus='second_fail';
+            break;
+        default:
+            callStatus='success';
+            break;
+    }
+    return {callStatus};
 }
