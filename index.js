@@ -70,13 +70,16 @@ app.post('/api/save_declaration_id', async (req, res)=>{
             const phone = req.body.data.contacts[0].phone[0];
             const {firstName, lastName, email} =epObj.address;
             await epRequests.changeClientData(req.body.data.utmContent, {firstName, lastName, email, phone}); 
+            console.log(`im here phone: ${phone}`);
         }
+        
         let TTN;
         if(req.body.data.ord_delivery=='novaposhta')
         TTN=req.body.data.ord_novaposhta.EN;
         else
         TTN=req.body.data.ord_ukrposhta.barcode;
         epRequests.enteringTTN(req.body.data.utmContent, TTN); 
+
         res.status(200).json('save_declaration ok!');
     }
     else

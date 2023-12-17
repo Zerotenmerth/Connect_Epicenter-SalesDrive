@@ -88,12 +88,12 @@ export function createObjWithoutUserData(obj)
 
 export function CreateClientDataObj(obj)
 {
-    let commentary = `*auto* Ep ${obj.comment}`;
+    let commentary = `*Ep* ${obj.comment}`;
     const statusOfPayment = obj.address.shipment.paymentStatus;
 
     if(statusOfPayment=='hold_set')
         commentary+='\n$Кабинет эпицентра!';
-    console.log(`${statusOfPayment} || ${commentary}`);
+    
     return {
         getResultData: '1',
         data:{

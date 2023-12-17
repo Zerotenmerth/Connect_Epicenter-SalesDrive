@@ -150,7 +150,6 @@ export default class EpRequests{
     }
     async changeCallStatus(orderID, callID)
     {
-        console.log(callID);
         let callStatus;
         switch (callID) {
             case 10:

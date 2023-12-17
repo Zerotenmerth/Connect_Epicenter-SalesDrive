@@ -26,7 +26,7 @@ export default async function SendCustomHook(token)
     {
         const arrIDs=result.items.map(item => item.number);
         let lastID = LoadLastOrder();
-        if(arrIDs[0]!=lastID)
+        if(lastID < arrIDs[0])
         {
             if(arrIDs.includes(lastID))
             {
