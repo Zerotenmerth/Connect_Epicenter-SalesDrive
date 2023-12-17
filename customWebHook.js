@@ -1,5 +1,6 @@
 import sendRequest from "./features.js";
 import fs from 'fs';
+import { CreateHeaders } from "./requestFileEp.js";
 const ourIp = fs.readFileSync('./data/currentIp.ini', 'utf-8');
 
 function LoadLastOrder()
@@ -13,14 +14,10 @@ function SaveLastOrder(lastID)
     fs.writeFileSync('./data/lastIDEpicenter.ini', lastID);
 }
 
-export default async function SendCustomHook(token)
+export default async function SendCustomHook()
 {
-    const headers ={
-        'Content-type': 'application/json; charset=UTF-8',
-        'Authorization': `Bearer ${token}`
-    }
     
-    let result = await sendRequest('GET', 'https://core-api.epicentrm.cloud/v2/oms/orders?filter%5BstatusCode%5D%5B%5D=new', null, headers);
+    let result = await sendRequest('GET', 'https://core-api.epicentrm.cloud/v2/oms/orders?filter%5BstatusCode%5D%5B%5D=new', null, CreateHeaders());
 
     if(result.items && result.items.length>0)
     {

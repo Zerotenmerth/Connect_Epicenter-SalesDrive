@@ -1,28 +1,37 @@
 import sendRequest from "./features.js";
+import fs from 'fs';
+
+import generateTokenToFile from "./loginToEp.js";
+await generateTokenToFile();
+
+export function CreateHeaders()
+{
+    const tokenEp = fs.readFileSync('./data/epToken.ini', 'utf-8');
+    return {
+        'Content-type': 'application/json; charset=UTF-8',
+        'Authorization': `Bearer ${tokenEp}`
+    };
+}
 
 export default class EpRequests{
-    #headers;
-    constructor(token)
+    regenerateToken()
     {
-        this.#headers = {
-            'Content-type': 'application/json; charset=UTF-8',
-            'Authorization': `Bearer ${token}`
-        };
+        generateTokenToFile();
     }
     async findOrderID(externalId)
     {
-        const result = await sendRequest('GET', `https://core-api.epicentrm.cloud/v2/oms/orders?filter%5Bnumber%5D=${externalId}`, null, this.#headers)
+        const result = await sendRequest('GET', `https://core-api.epicentrm.cloud/v2/oms/orders?filter%5Bnumber%5D=${externalId}`, null, CreateHeaders())
         return result.id;
     }
     async getDataFromOrder(orderID)
     {
-        const result = await sendRequest('GET', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}`, null, this.#headers);
+        const result = await sendRequest('GET', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}`, null, CreateHeaders());
         return result;
     }
     async getCityID(city, deliveryName)
     {
         const result = await sendRequest('GET', `https://core-api.epicentrm.cloud/v2/deliveries/${deliveryName}/settlements?offset=0&limit=10&title=${city}`, 
-                             null, this.#headers);
+                             null, CreateHeaders());
         return result.items[0].id;
     }
     async getDepartmentInfo(obj)
@@ -52,7 +61,7 @@ export default class EpRequests{
         const cityID = await this.getCityID(city, deliveryName);
         const result = await sendRequest('GET', 
         `https://core-api.epicentrm.cloud/v2/deliveries/${deliveryName}/settlements/${cityID}/offices?offset=0&limit=10&filter%5BisActive%5D=1`, 
-        null , this.#headers);
+        null , CreateHeaders());
        console.log(result);
         const department = result.items.find(item => item.post_code == departmentCode);
         let officeId; let settlementId;
@@ -72,17 +81,17 @@ export default class EpRequests{
     }
     async changeClientData(orderID, obj)
     {
-        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/client-data`, obj, this.#headers);
+        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/client-data`, obj, CreateHeaders());
     }
     async changeDelivery(orderID, deliveryName, obj)
     {
-        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/delivery-data/${deliveryName}`, obj, this.#headers);
+        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/delivery-data/${deliveryName}`, obj, CreateHeaders());
     }
     async enteringTTN(orderID, deliveryNumber)
     {
         let typeMail = deliveryNumber.startsWith('2') ? 'nova_poshta' : 'ukrposhta';
         await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/delivery-number/${typeMail}`,
-                    {number: deliveryNumber}, this.#headers);
+                    {number: deliveryNumber}, CreateHeaders());
     }
     async changeToCancel(orderID, rejectID)
     {
@@ -137,16 +146,16 @@ export default class EpRequests{
         }
 
         await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/change-status/to/canceled`,
-                    {reason_code, comment, translationKey}, this.#headers);
+                    {reason_code, comment, translationKey}, CreateHeaders());
     }
     async changeToConfirmed(orderID)
     {
         this.changeCallStatus(orderID);
-        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/change-status/to/confirmed`, null, this.#headers);
+        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/change-status/to/confirmed`, null, CreateHeaders());
     }
     async changeToConfirmedByMerchant(orderID)
     {
-        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/change-status/to/confirmed_by_merchant`, null, this.#headers);
+        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/change-status/to/confirmed_by_merchant`, null, CreateHeaders());
     }
     async changeCallStatus(orderID, callID)
     {
@@ -164,7 +173,7 @@ export default class EpRequests{
         }
 
         await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/call-status`, 
-                    {callStatus}, this.#headers);
+                    {callStatus}, CreateHeaders());
     }
 
 }

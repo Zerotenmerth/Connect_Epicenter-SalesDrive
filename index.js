@@ -1,40 +1,26 @@
 import express from "express";
-import fs from 'fs';
-
-import path from "path";
-import {fileURLToPath} from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-import getToken from "./loginToEp.js";
-let tokenEp =await getToken();
-
-import CheckNewOrdersEpicenter from './customWebHook.js'
 
 import EpRequests from "./requestFileEp.js";
-let epRequests = new EpRequests(tokenEp);
+const epRequests = new EpRequests();
 
 import RequestsSales from "./requestForSales.js";
 const salesRequests = new RequestsSales();
 
+import CheckNewOrdersEpicenter from './customWebHook.js'
 import { ComparisonObjects, CreateClientDataObj, createObjWithoutUserData } from "./marketplaceMethods.js";
-
 import { CronJob } from 'cron';
-
-
-
 
 const PORT = 8080;
 const app = express();
 
 app.use(express.json());
 
-app.get('/', (req, res)=>{
+app.get('/', (_, res)=>{
 
     res.send('<h1> All ok!</h1>');
 })
 
-app.post('/api/cancel_order', async (req, res)=>{ //tested
+app.post('/api/cancel_order', async (req, res)=>{
 
     if(req.body.data.comment.includes('Ep'))
     {
@@ -45,7 +31,7 @@ app.post('/api/cancel_order', async (req, res)=>{ //tested
     res.status(200).json('Nah not Ep order!');
 })
 
-app.post('/api/cancel_by_customer', async(req, res)=>{ //tested
+app.post('/api/cancel_by_customer', async(req, res)=>{
 
     const obj ={
         id: req.body.data.id,
@@ -86,7 +72,7 @@ app.post('/api/save_declaration_id', async (req, res)=>{
     res.status(200).json('Nah not Ep order!');
 })
 
-app.post('/api/new_order', (req, res)=>{ //tested
+app.post('/api/new_order', (req, res)=>{
 
     if(!req.body.data.comment.includes('Ep'))
     {
@@ -101,7 +87,7 @@ app.post('/api/new_order', (req, res)=>{ //tested
     res.status(200).json('Nah not Ep order!');
 })
 
-app.post('/api/processing_order', async (req, res)=>{ //tested
+app.post('/api/processing_order', async (req, res)=>{
 
     if(req.body.data.comment.includes('Ep'))
     {
@@ -128,7 +114,7 @@ app.post('/api/confirmed_order', async(req, res)=>{
     res.status(200).json('Nah not Ep order!');
 })
 
-app.post('/api/new_order_ep', (req, res)=>{ //tested
+app.post('/api/new_order_ep', (req, res)=>{
 
     req.body.forEach(async(order) => {
         const epObj = await epRequests.getDataFromOrder(order);
@@ -139,7 +125,7 @@ app.post('/api/new_order_ep', (req, res)=>{ //tested
 
 })
 
-app.post('/api/miss_call', async (req, res)=>{ //tested
+app.post('/api/miss_call', async (req, res)=>{
 
     if(req.body.data.comment.includes('Ep'))
     {
@@ -150,23 +136,13 @@ app.post('/api/miss_call', async (req, res)=>{ //tested
     res.status(200).json('Nah not Ep order!');
 })
 
-// async function test(){
-//     // const file = JSON.parse(fs.readFileSync('./UkrSalesObj.json', 'utf-8'))
-//     // epRequests.getDepartmentInfo(file);
-//     CheckNewOrdersEpicenter(tokenEp);
-// }
-// test();
-
- app.listen(PORT, ()=>console.log(`Server started! Port: ${PORT}`));
- let timerId = setInterval(()=>{CheckNewOrdersEpicenter(tokenEp)}, 60000);
+     app.listen(PORT, ()=>console.log(`Server started! Port: ${PORT}`));
+     setInterval(()=>{CheckNewOrdersEpicenter()}, 60000);
 
 function StartJob()
 {
     const job= new CronJob('0 0 */3 * * *', async function(){
-        tokenEp =await getToken();
-        epRequests = new EpRequests(tokenEp);
-        clearInterval(timerId);
-        timerId = setInterval(()=>{CheckNewOrdersEpicenter(tokenEp)}, 60000);
+        epRequests.regenerateToken();
     }, null, true, 'Europe/Kiev');
     job.start();
 }
