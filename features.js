@@ -14,6 +14,6 @@ import { CronJob } from 'cron';
 
 export function startJob(start, func)
 {
-    const job= new CronJob(start, func);
+    const job= new CronJob(start, func, null, true, 'Europe/Kiev');
 	job.start();
 }
