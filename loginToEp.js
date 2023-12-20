@@ -1,5 +1,5 @@
 import fs from 'fs';
-import sendRequest from './features.js';
+import {sendRequest} from './features.js';
 
 export default async function generateTokenToFile()
 {

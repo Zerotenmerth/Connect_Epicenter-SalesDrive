@@ -1,4 +1,4 @@
-import sendRequest from "./features.js";
+import {sendRequest} from "./features.js";
 import fs from 'fs';
 
 import generateTokenToFile from "./loginToEp.js";

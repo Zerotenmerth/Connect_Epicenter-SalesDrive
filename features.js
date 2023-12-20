@@ -1,4 +1,4 @@
-export default function sendRequest(method, url, body, headers={'Content-type': 'application/json; charset=UTF-8'})
+export function sendRequest(method, url, body, headers={'Content-type': 'application/json; charset=UTF-8'})
 {
 	return fetch(url, {
 		method: method,
@@ -8,4 +8,12 @@ export default function sendRequest(method, url, body, headers={'Content-type': 
 	{
 		return response.json();
 	}).catch(err =>{return err;});
+}
+
+import { CronJob } from 'cron';
+
+export function startJob(start, func)
+{
+    const job= new CronJob(start, func);
+	job.start();
 }

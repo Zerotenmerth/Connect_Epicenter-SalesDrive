@@ -1,4 +1,4 @@
-import sendRequest from "./features.js";
+import {sendRequest} from "./features.js";
 import fs from 'fs';
 const salesToken = fs.readFileSync('./data/sales_private_data.ini', 'utf-8');
 

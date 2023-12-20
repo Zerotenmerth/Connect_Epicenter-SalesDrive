@@ -8,7 +8,8 @@ const salesRequests = new RequestsSales();
 
 import CheckNewOrdersEpicenter from './customWebHook.js'
 import { ComparisonObjects, CreateClientDataObj, createObjWithoutUserData } from "./marketplaceMethods.js";
-import { CronJob } from 'cron';
+import { startJob } from "./features.js";
+
 
 const PORT = 8080;
 const app = express();
@@ -137,13 +138,6 @@ app.post('/api/miss_call', async (req, res)=>{
 })
 
      app.listen(PORT, ()=>console.log(`Server started! Port: ${PORT}`));
-     setInterval(()=>{CheckNewOrdersEpicenter()}, 60000);
+     startJob('0 */1 * * * *', CheckNewOrdersEpicenter);
 
-function StartJob()
-{
-    const job= new CronJob('0 0 */3 * * *', async function(){
-        epRequests.regenerateToken();
-    }, null, true, 'Europe/Kiev');
-    job.start();
-}
-StartJob();
+startJob('0 0 */3 * * *', epRequests.regenerateToken);

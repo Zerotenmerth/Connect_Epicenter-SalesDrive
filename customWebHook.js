@@ -1,4 +1,4 @@
-import sendRequest from "./features.js";
+import {sendRequest} from "./features.js";
 import fs from 'fs';
 import { CreateHeaders } from "./requestFileEp.js";
 const ourIp = fs.readFileSync('./data/currentIp.ini', 'utf-8');
