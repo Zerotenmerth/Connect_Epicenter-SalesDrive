@@ -7,7 +7,9 @@ import RequestsSales from "./requestForSales.js";
 const salesRequests = new RequestsSales();
 
 import CheckNewOrdersEpicenter from './customWebHook.js'
-import { ComparisonObjects, CreateClientDataObj, createObjWithoutUserData } from "./marketplaceMethods.js";
+import MarketplaceMethods from "./marketplaceMethods.js";
+const marketMethods = new MarketplaceMethods();
+
 import { startJob } from "./features.js";
 
 
@@ -47,7 +49,7 @@ app.post('/api/save_declaration_id', async (req, res)=>{
     if(req.body.data.comment.includes('Ep'))
     {
         const epObj = await epRequests.getDataFromOrder(req.body.data.utmContent);
-        const comprasion = ComparisonObjects(req.body, epObj);
+        const comprasion = marketMethods.comparisonObjects(req.body, epObj);
         if(!comprasion.isSameDelivery)
         {
 
@@ -95,7 +97,7 @@ app.post('/api/processing_order', async (req, res)=>{
         await epRequests.changeToConfirmedByMerchant(req.body.data.utmContent);
         const epObj = await epRequests.getDataFromOrder(req.body.data.utmContent);
         
-        const objForSales = CreateClientDataObj(epObj);
+        const objForSales = marketMethods.createClientDataObj(epObj);
         objForSales.id = req.body.data.id;
         await salesRequests.editOrder(objForSales);
         res.status(200).json('Confirmed to merchant ok!');
@@ -108,8 +110,15 @@ app.post('/api/confirmed_order', async(req, res)=>{
 
     if(req.body.data.comment.includes('Ep'))
     {
-        await epRequests.changeToConfirmed(req.body.data.utmContent);
         res.status(200).json('Confirmed ok!');
+        if(req.body.data.comment.includes('easypay'))
+        {
+            const difference = marketMethods.differenceBTWCreateTime(req.body.data.orderTime);
+            console.log(difference);
+            startJob(new Date(Date.now() + difference), ()=>{ console.log('The time has come!')});
+        }
+        else
+        await epRequests.changeToConfirmed(req.body.data.utmContent);
     }
     else
     res.status(200).json('Nah not Ep order!');
@@ -119,7 +128,7 @@ app.post('/api/new_order_ep', (req, res)=>{
 
     req.body.forEach(async(order) => {
         const epObj = await epRequests.getDataFromOrder(order);
-        const objForSales = createObjWithoutUserData(epObj);
+        const objForSales = marketMethods.createObjWithoutUserData(epObj);
         salesRequests.addOrder(objForSales);
         res.status(200).json('new orders created ok!');
     })    
