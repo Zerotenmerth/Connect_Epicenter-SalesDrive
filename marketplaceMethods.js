@@ -130,10 +130,21 @@ export default class MarketplaceMethods{
 
     differenceBTWCreateTime(crTime)
     {
-        const difference = 11100000 - (new Date()-new Date(crTime));
+        const realTime = GetOurDateTime()
+        const difference = 11100000 - (realTime-new Date(crTime));
         if(difference>0)
             return difference;
          else
         return 5000;
     }
+}
+
+function GetOurDateTime()
+{
+    const date = new Date();
+    const UATime = date.toLocaleString("ru-RU", {timeZone: "Europe/Kyiv"});
+    const arrs = UATime.split(',');
+    let result=arrs[1];
+    result=`${arrs[0].split('.').reverse().join('-')}${result}`;
+    return result;
 }

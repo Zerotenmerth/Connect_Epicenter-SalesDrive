@@ -114,21 +114,22 @@ app.post('/api/confirmed_order', async(req, res)=>{
         if(req.body.data.comment.includes('easypay'))
         {
             const difference = marketMethods.differenceBTWCreateTime(req.body.data.orderTime);
-            console.log(`Diff: ${difference}, OrderTime: ${req.body.data.orderTime}`);
             startJob(new Date(Date.now() + difference), async()=>{
                 const epObj = await epRequests.getDataFromOrder(req.body.data.utmContent);
                 let comment = req.body.data.comment.replace('easypay', '');
                 let obj ={
                     id: req.body.data.id,
-                    data: { statusId: '2', comment }
+                    data: { payment_method:'id_14', comment }
                 }
                 if(epObj.address.shipment.paymentStatus=='hold_set')
+                {
                     obj.data.comment+='\n$Кабинет эпицентра!';
+                    obj.data.statusId = '2';
+                }
                 else
-                    obj.data.payment_method= 'id_14';
+                    obj.data.comment= `НЕ ОПЛАЧЕН! ${obj.data.comment}`;
                 
                 await salesRequests.editOrder(obj);
-                console.log('The time has come!');
                 // here change to Anal
                 await epRequests.changeToConfirmed(req.body.data.utmContent);
             });
