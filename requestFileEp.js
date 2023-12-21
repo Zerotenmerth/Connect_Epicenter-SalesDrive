@@ -32,17 +32,7 @@ export default class EpRequests{
     {
         const result = await sendRequest('GET', `https://core-api.epicentrm.cloud/v2/deliveries/${deliveryName}/settlements?title=${city}`, 
                              null, CreateHeaders());
-        let cityID;
-        switch (deliveryName) {
-            case 'nova_poshta':
-                cityID=result.items.find(item => item.title == city).id
-                break;
-        
-            case 'ukrposhta':
-                cityID=result.items.find(item => item.city == city).id  
-                break;
-        }
-        return cityID || result.items[0].id;
+        return result.items.find(item => item.title == city || item.city == city)?.id || result.items[0].id;
     }
     async getDepartmentInfo(obj)
     {
@@ -187,13 +177,13 @@ function FindDepartment(result, deliveryName, departmentCode)
 {
     let department;
     let officeId; let settlementId;
-    switch (deliveryName) {
+    switch (deliveryName) 
+    {
         case 'ukrposhta':
             department = result.items.find(item => item.post_code == departmentCode);
             if(department){
                 officeId=department.id; 
                 settlementId=department.settlement_id;
-                console.log('find');
             }
             else{
                 officeId= result.items[0]?.id || "faa13167-76f4-4ffd-8fab-77c48fc93dee";
@@ -206,7 +196,6 @@ function FindDepartment(result, deliveryName, departmentCode)
             if(department){
                 officeId=department.id; 
                 settlementId=department.settlementId;
-                console.log('find');
             }
             else{
                 officeId= result.items[0]?.id || "511a8c94-1822-402f-9633-7d7659e4f090";
@@ -215,9 +204,9 @@ function FindDepartment(result, deliveryName, departmentCode)
             break;
     }
     
-        return {
+    return {
             officeId,
             settlementId,
             paymentProvider: "pay_on_delivery"
-        }
+           }
 }
