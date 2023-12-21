@@ -48,11 +48,17 @@ app.post('/api/save_declaration_id', async (req, res)=>{
 
     if(req.body.data.comment.includes('Ep'))
     {
+        res.status(200).json('save_declaration ok!');
+
         const epObj = await epRequests.getDataFromOrder(req.body.data.utmContent);
         const comprasion = marketMethods.comparisonObjects(req.body, epObj);
+        const typeMail = req.body.data.ord_delivery == 'ukrposhta' ? 'ukrposhta' : 'nova_poshta';
+        const TTN = req.body.data[`ord_${req.body.data.ord_delivery}`]?.EN || 
+                    req.body.data[`ord_${req.body.data.ord_delivery}`]?.barcode;
         if(!comprasion.isSameDelivery)
         {
-
+            const DeliveryObj = await epRequests.getDepartmentInfo(req.body);
+            await epRequests.changeDelivery(req.body.data.utmContent, typeMail, DeliveryObj);
         }
         if(!comprasion.isSamePhone)
         {
@@ -62,14 +68,7 @@ app.post('/api/save_declaration_id', async (req, res)=>{
             console.log(`im here phone: ${phone}`);
         }
         
-        let TTN;
-        if(req.body.data.ord_delivery=='novaposhta')
-        TTN=req.body.data.ord_novaposhta.EN;
-        else
-        TTN=req.body.data.ord_ukrposhta.barcode;
-        epRequests.enteringTTN(req.body.data.utmContent, TTN); 
-
-        res.status(200).json('save_declaration ok!');
+        epRequests.enteringTTN(req.body.data.utmContent, typeMail, TTN); 
     }
     else
     res.status(200).json('Nah not Ep order!');

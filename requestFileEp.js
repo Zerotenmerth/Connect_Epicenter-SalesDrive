@@ -30,66 +30,42 @@ export default class EpRequests{
     }
     async getCityID(city, deliveryName)
     {
-        const result = await sendRequest('GET', `https://core-api.epicentrm.cloud/v2/deliveries/${deliveryName}/settlements?offset=0&limit=10&title=${city}`, 
+        const result = await sendRequest('GET', `https://core-api.epicentrm.cloud/v2/deliveries/${deliveryName}/settlements?title=${city}`, 
                              null, CreateHeaders());
-        return result.items[0].id;
+        let cityID;
+        switch (deliveryName) {
+            case 'nova_poshta':
+                cityID=result.items.find(item => item.title == city).id
+                break;
+        
+            case 'ukrposhta':
+                cityID=result.items.find(item => item.city == city).id  
+                break;
+        }
+        return cityID || result.items[0].id;
     }
     async getDepartmentInfo(obj)
     {
-        let deliveryName;
-        let city = obj.data[`ord_${obj.data.ord_delivery}`].cityName;
-        let departmentCode;
-        let TTN;
-        if(obj.data.ord_delivery=='novaposhta')
-        {
-            deliveryName='nova_poshta';
-            city = obj.data.ord_novaposhta.cityName;
-            city= city.replace('м. ', '').replace('с-ще ', '').replace('c. ', '').replace('смт. ', '');
-            if(city.includes(' ('))
-                city =city.substring(0, city.indexOf(' ('));
-
-            departmentCode=obj.data.ord_novaposhta.branchNumber;
-            TTN=obj.data.ord_novaposhta.EN;
-        }
-        else{
-            deliveryName = 'ukrposhta';
-            departmentCode=obj.data.ord_ukrposhta.branch;
-            TTN=obj.data.ord_ukrposhta.barcode;
-        }
-        console.log({deliveryName, city, departmentCode, TTN});
-
+        const {city, deliveryName, departmentCode} = GetInfoAboutDeliverySales(obj);
         const cityID = await this.getCityID(city, deliveryName);
+
         const result = await sendRequest('GET', 
-        `https://core-api.epicentrm.cloud/v2/deliveries/${deliveryName}/settlements/${cityID}/offices?offset=0&limit=10&filter%5BisActive%5D=1`, 
+        `https://core-api.epicentrm.cloud/v2/deliveries/${deliveryName}/settlements/${cityID}/offices`, 
         null , CreateHeaders());
-       console.log(result);
-        const department = result.items.find(item => item.post_code == departmentCode);
-        let officeId; let settlementId;
-        if(department){
-            officeId=department.id; 
-            settlementId=department.settlement_id;
-        }
-        else{
-            officeId= items[0].id;
-            settlementId=items[0].settlement_id;
-        }
-        console.log( {
-            officeId,
-            settlementId,
-            paymentProvider: "pay_on_delivery"
-        })
+
+        const ourResult = FindDepartment(result, deliveryName, departmentCode);
+        return ourResult;
     }
     async changeClientData(orderID, obj)
     {
         await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/client-data`, obj, CreateHeaders());
     }
-    async changeDelivery(orderID, deliveryName, obj)
+    async changeDelivery(orderID, typeMail, obj)
     {
-        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/delivery-data/${deliveryName}`, obj, CreateHeaders());
+        await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/delivery-data/${typeMail}`, obj, CreateHeaders());
     }
-    async enteringTTN(orderID, deliveryNumber)
+    async enteringTTN(orderID, typeMail, deliveryNumber)
     {
-        let typeMail = deliveryNumber.startsWith('2') ? 'nova_poshta' : 'ukrposhta';
         await sendRequest('POST', `https://core-api.epicentrm.cloud/v2/oms/orders/${orderID}/delivery-number/${typeMail}`,
                     {number: deliveryNumber}, CreateHeaders());
     }
@@ -185,4 +161,63 @@ function GetCallStatus(callID)
             break;
     }
     return {callStatus};
+}
+function GetInfoAboutDeliverySales(obj)
+{
+        let deliveryName;
+        let city = obj.data[`ord_${obj.data.ord_delivery}`].cityName;
+        let departmentCode;
+
+        if(obj.data.ord_delivery=='novaposhta')
+        {
+            deliveryName='nova_poshta';
+            city= city.replace('м. ', '').replace('с-ще ', '').replace('с. ', '').replace('смт. ', '');
+            if(city.includes(' ('))
+                city =city.substring(0, city.indexOf(' ('));
+
+            departmentCode=obj.data.ord_novaposhta.branchNumber;
+        }
+        else{
+            deliveryName = 'ukrposhta';
+            departmentCode=obj.data.ord_ukrposhta.branch;
+        }
+        return {deliveryName, city, departmentCode}
+}
+function FindDepartment(result, deliveryName, departmentCode)
+{
+    let department;
+    let officeId; let settlementId;
+    switch (deliveryName) {
+        case 'ukrposhta':
+            department = result.items.find(item => item.post_code == departmentCode);
+            if(department){
+                officeId=department.id; 
+                settlementId=department.settlement_id;
+                console.log('find');
+            }
+            else{
+                officeId= result.items[0]?.id || "faa13167-76f4-4ffd-8fab-77c48fc93dee";
+                settlementId= result.items[0]?.settlement_id || "01c6bfc3-bcfb-4f46-9cd2-dcb2e49c4ca9";
+            }
+            break;
+    
+        case 'nova_poshta':
+            department = result.items.find(item => item.title.includes(departmentCode));
+            if(department){
+                officeId=department.id; 
+                settlementId=department.settlementId;
+                console.log('find');
+            }
+            else{
+                officeId= result.items[0]?.id || "511a8c94-1822-402f-9633-7d7659e4f090";
+                settlementId= result.items[0]?.settlementId || "0ecaee44-f9c4-4912-bd17-3814e8e3b7d1";
+            }
+            break;
+    }
+    
+        return {
+            officeId,
+            settlementId,
+            paymentProvider: "pay_on_delivery"
+        }
 }
