@@ -78,12 +78,12 @@ app.post('/api/new_order', (req, res)=>{
 
     if(!req.body.data.comment.includes('Ep'))
     {
-        res.status(200).json('Change to proccesing -  ok!');
         const obj ={
             id: req.body.data.id,
             data: { statusId: '11' }
         }
-        salesRequests.editOrder(obj);
+        setTimeout(()=>{salesRequests.editOrder(obj);}, 5000);
+        res.status(200).json('Change to proccesing -  ok!');
     }
     else
     res.status(200).json('Nah not Ep order!');
@@ -114,6 +114,7 @@ app.post('/api/confirmed_order', async(req, res)=>{
         if(req.body.data.comment.includes('easypay'))
         {
             const difference = marketMethods.differenceBTWCreateTime(req.body.data.orderTime);
+            console.log(new Date(Date.now() + difference));
             startJob(new Date(Date.now() + difference), async()=>{
                 const epObj = await epRequests.getDataFromOrder(req.body.data.utmContent);
                 let comment = req.body.data.comment.replace('easypay', '');
@@ -133,7 +134,6 @@ app.post('/api/confirmed_order', async(req, res)=>{
                         paymentProvider: "pay_on_delivery",
                         settlementId: epObj.address.shipment.settlementId
                     }
-                    console.log(deliveryObj);
                     await epRequests.changeDelivery(req.body.data.utmContent, epObj.address.shipment.provider, deliveryObj);
                 }
                 await salesRequests.editOrder(obj);

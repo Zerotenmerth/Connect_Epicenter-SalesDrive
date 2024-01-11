@@ -130,8 +130,8 @@ export default class MarketplaceMethods{
 
     differenceBTWCreateTime(crTime)
     {
-        const realTime = GetOurDateTime()
-        const difference = 11100000 - (realTime-new Date(crTime));
+        const realTime = GetOurDateTime();
+        const difference = 11100000 - (new Date(realTime) - new Date(crTime));
         if(difference>0)
             return difference;
          else
