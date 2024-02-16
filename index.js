@@ -6,7 +6,8 @@ const epRequests = new EpRequests();
 import RequestsSales from "./requestForSales.js";
 const salesRequests = new RequestsSales();
 
-import CheckNewOrdersEpicenter from './customWebHook.js'
+import CheckNewOrdersEpicenter from './customWebHook.js';
+import CheckPaidOrdersSales from './paidWebhook.js'
 import MarketplaceMethods from "./marketplaceMethods.js";
 const marketMethods = new MarketplaceMethods();
 
@@ -158,6 +159,18 @@ app.post('/api/new_order_ep', (req, res)=>{
 
 })
 
+app.post('/api/paid_order_sales', (req, res)=>{
+
+    req.body.forEach(async(orderId) => {
+        res.status(200).json('Change to proccesing -  ok!');
+        const obj ={
+            id: orderId,
+            data: { statusId: '2' }
+        }
+        await salesRequests.editOrder(obj);
+    })    
+})
+
 app.post('/api/miss_call', async (req, res)=>{
 
     if(req.body.data.comment.includes('Ep'))
@@ -171,5 +184,6 @@ app.post('/api/miss_call', async (req, res)=>{
 
      app.listen(PORT, ()=>console.log(`Server started! Port: ${PORT}`));
      startJob('0 */1 * * * *', CheckNewOrdersEpicenter);
+     startJob('0 */30 * * * *', CheckPaidOrdersSales);
 
 startJob('0 0 */3 * * *', epRequests.regenerateToken);
