@@ -8,7 +8,7 @@ const salesRequests = new RequestsSales();
 
 import CheckNewOrdersEpicenter from './customWebHook.js';
 import CheckPaidOrdersSales from './paidWebhook.js'
-import MarketplaceMethods from "./marketplaceMethods.js";
+import {MarketplaceMethods, GetOurDateTime} from "./marketplaceMethods.js";
 const marketMethods = new MarketplaceMethods();
 
 import { startJob } from "./features.js";
@@ -115,8 +115,10 @@ app.post('/api/confirmed_order', async(req, res)=>{
         if(req.body.data.comment.includes('easypay'))
         {
             const difference = marketMethods.differenceBTWCreateTime(req.body.data.orderTime);
-            console.log(new Date(Date.now() + difference));
-            startJob(new Date(Date.now() + difference), async()=>{
+            const realTime = new Date(GetOurDateTime());
+            console.log(realTime);
+            console.log(new Date(realTime.getTime() + difference));
+            startJob(new Date(realTime.getTime() + difference), async()=>{
                 const epObj = await epRequests.getDataFromOrder(req.body.data.utmContent);
                 let comment = req.body.data.comment.replace('easypay', '');
                 let obj ={
@@ -160,7 +162,6 @@ app.post('/api/new_order_ep', (req, res)=>{
 })
 
 app.post('/api/paid_order_sales', (req, res)=>{
-
     req.body.forEach(async(orderId) => {
         res.status(200).json('Change to proccesing -  ok!');
         const obj ={
@@ -184,6 +185,6 @@ app.post('/api/miss_call', async (req, res)=>{
 
      app.listen(PORT, ()=>console.log(`Server started! Port: ${PORT}`));
      startJob('0 */1 * * * *', CheckNewOrdersEpicenter);
-     startJob('0 */30 * * * *', CheckPaidOrdersSales);
+     startJob('0 */15 * * * *', CheckPaidOrdersSales);
 
 startJob('0 0 */3 * * *', epRequests.regenerateToken);

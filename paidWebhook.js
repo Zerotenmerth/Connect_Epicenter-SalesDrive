@@ -12,7 +12,6 @@ export default async function SendPaidHook()
     {'Content-type': 'application/json; charset=UTF-8', 'Form-Api-Key': tokenForRead});
 
     const arrEncryptedID = result.data.filter(x=>[10, 11, 12, 27].includes(x.statusId/1))?.map(x=>x.id) || [];
-
     if(arrEncryptedID.length!=0)
     await sendRequest('POST', `${ourIp}:8080/api/paid_order_sales`, arrEncryptedID); 
 }

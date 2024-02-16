@@ -47,7 +47,7 @@ function createFullEpObjFromOrder(obj)
     };
 }
 
-export default class MarketplaceMethods{
+export class MarketplaceMethods{
 
     createObjWithoutUserData(obj)
     {
@@ -139,7 +139,7 @@ export default class MarketplaceMethods{
     }
 }
 
-function GetOurDateTime()
+export function GetOurDateTime()
 {
     const date = new Date();
     const UATime = date.toLocaleString("ru-RU", {timeZone: "Europe/Kyiv"});
