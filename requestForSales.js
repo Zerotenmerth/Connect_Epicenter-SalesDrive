@@ -1,6 +1,6 @@
 import {sendRequest} from "./features.js";
 import fs from 'fs';
-const salesToken = fs.readFileSync('./data/sales_private_data.ini', 'utf-8');
+const salesToken = JSON.parse(fs.readFileSync('./data/secureFile.json', 'utf-8')).salesDriveMain;
 
 export default class RequestsSales{
     #salesToken;

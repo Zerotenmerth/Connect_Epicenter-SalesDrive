@@ -6,12 +6,16 @@ const epRequests = new EpRequests();
 import RequestsSales from "./requestForSales.js";
 const salesRequests = new RequestsSales();
 
+import RequestsProm from "./requestForProm.js";
+const promRequests = new RequestsProm();
+
 import CheckNewOrdersEpicenter from './customWebHook.js';
 import CheckPaidOrdersSales from './paidWebhook.js'
 import {MarketplaceMethods, GetOurDateTime} from "./marketplaceMethods.js";
 const marketMethods = new MarketplaceMethods();
 
 import { startJob } from "./features.js";
+
 
 
 const PORT = 8080;
@@ -162,13 +166,28 @@ app.post('/api/new_order_ep', (req, res)=>{
 })
 
 app.post('/api/paid_order_sales', (req, res)=>{
-    req.body.forEach(async(orderId) => {
+    req.body.forEach(async(order) => {
         const obj ={
-            id: orderId,
+            id: order.id,
             data: { statusId: '2' }
         }
         await salesRequests.editOrder(obj);
     })    
+})
+
+app.post('/api/check_paid_prom', (req, res)=>{
+    req.body.forEach(async (order)=> {
+        const resultOfPromOrder = await promRequests.getDataFromOrder(order.externalId);
+        const resOfPaid = resultOfPromOrder.order.payment_data?.status || 'unpaid';
+        if(resOfPaid =='paid')
+        {
+            const obj ={
+                id: order.id,
+                data: { statusId: '2' }
+            }
+            await salesRequests.editOrder(obj); 
+        }  
+    })
 })
 
 app.post('/api/miss_call', async (req, res)=>{
@@ -184,6 +203,6 @@ app.post('/api/miss_call', async (req, res)=>{
 
      app.listen(PORT, ()=>console.log(`Server started! Port: ${PORT}`));
      startJob('0 */1 * * * *', CheckNewOrdersEpicenter);
-     startJob('0 */15 * * * *', CheckPaidOrdersSales);
+     startJob('0 */1 * * * *', CheckPaidOrdersSales);
 
 startJob('0 0 */3 * * *', epRequests.regenerateToken);
