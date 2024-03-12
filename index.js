@@ -163,7 +163,6 @@ app.post('/api/new_order_ep', (req, res)=>{
 
 app.post('/api/paid_order_sales', (req, res)=>{
     req.body.forEach(async(orderId) => {
-        res.status(200).json('Change to proccesing -  ok!');
         const obj ={
             id: orderId,
             data: { statusId: '2' }
