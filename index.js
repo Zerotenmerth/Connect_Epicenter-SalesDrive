@@ -87,8 +87,10 @@ app.post('/api/new_order', (req, res)=>{
             id: req.body.data.id,
             data: { statusId: '11' }
         }
-        setTimeout(()=>{salesRequests.editOrder(obj);}, 5000);
-        res.status(200).json('Change to proccesing -  ok!');
+        setTimeout(()=>{
+            salesRequests.editOrder(obj);
+            res.status(200).json('Change to proccesing -  ok!');
+        }, 3000);
     }
     else
     res.status(200).json('Nah not Ep order!');
@@ -178,7 +180,7 @@ app.post('/api/paid_order_sales', (req, res)=>{
 app.post('/api/check_paid_prom', (req, res)=>{
     req.body.forEach(async (order)=> {
         const resultOfPromOrder = await promRequests.getDataFromOrder(order.externalId);
-        const resOfPaid = resultOfPromOrder.order.payment_data?.status || 'unpaid';
+        const resOfPaid = resultOfPromOrder?.order.payment_data.status || 'unpaid';
         if(resOfPaid =='paid')
         {
             const obj ={
@@ -203,6 +205,6 @@ app.post('/api/miss_call', async (req, res)=>{
 
      app.listen(PORT, ()=>console.log(`Server started! Port: ${PORT}`));
      startJob('0 */1 * * * *', CheckNewOrdersEpicenter);
-     startJob('0 */1 * * * *', CheckPaidOrdersSales);
+     startJob('0 */15 * * * *', CheckPaidOrdersSales);
 
 startJob('0 0 */3 * * *', epRequests.regenerateToken);
